@@ -1,0 +1,284 @@
+import type { AnnotationObject, Rect, ResizeHandle } from '@/types/editor'
+
+const HANDLE_SIZE = 8
+
+export function drawAnnotation(ctx: CanvasRenderingContext2D, obj: AnnotationObject) {
+  ctx.save()
+  switch (obj.type) {
+    case 'arrow':
+      drawArrow(ctx, obj.x1, obj.y1, obj.x2, obj.y2, obj.color, obj.strokeWidth)
+      break
+    case 'rectangle':
+      drawRectangle(ctx, obj)
+      break
+    case 'circle':
+      drawCircle(ctx, obj)
+      break
+    case 'text':
+      drawText(ctx, obj)
+      break
+    case 'highlight':
+      drawHighlight(ctx, obj)
+      break
+    case 'blur':
+      // Blur is rendered separately via compositing
+      break
+  }
+  ctx.restore()
+}
+
+export function drawArrow(
+  ctx: CanvasRenderingContext2D,
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number,
+  color: string,
+  width: number,
+) {
+  const headLength = Math.max(12, width * 4)
+  const angle = Math.atan2(y2 - y1, x2 - x1)
+
+  ctx.strokeStyle = color
+  ctx.fillStyle = color
+  ctx.lineWidth = width
+  ctx.lineCap = 'round'
+
+  ctx.beginPath()
+  ctx.moveTo(x1, y1)
+  ctx.lineTo(x2, y2)
+  ctx.stroke()
+
+  ctx.beginPath()
+  ctx.moveTo(x2, y2)
+  ctx.lineTo(
+    x2 - headLength * Math.cos(angle - Math.PI / 6),
+    y2 - headLength * Math.sin(angle - Math.PI / 6),
+  )
+  ctx.lineTo(
+    x2 - headLength * Math.cos(angle + Math.PI / 6),
+    y2 - headLength * Math.sin(angle + Math.PI / 6),
+  )
+  ctx.closePath()
+  ctx.fill()
+}
+
+function drawRectangle(
+  ctx: CanvasRenderingContext2D,
+  obj: Extract<AnnotationObject, { type: 'rectangle' }>,
+) {
+  ctx.strokeStyle = obj.color
+  ctx.lineWidth = obj.strokeWidth
+  if (obj.fillColor) {
+    ctx.fillStyle = obj.fillColor
+    ctx.fillRect(obj.x, obj.y, obj.width, obj.height)
+  }
+  ctx.strokeRect(obj.x, obj.y, obj.width, obj.height)
+}
+
+function drawCircle(
+  ctx: CanvasRenderingContext2D,
+  obj: Extract<AnnotationObject, { type: 'circle' }>,
+) {
+  ctx.strokeStyle = obj.color
+  ctx.lineWidth = obj.strokeWidth
+  ctx.beginPath()
+  ctx.arc(obj.x, obj.y, obj.radius, 0, Math.PI * 2)
+  if (obj.fillColor) {
+    ctx.fillStyle = obj.fillColor
+    ctx.fill()
+  }
+  ctx.stroke()
+}
+
+function drawText(
+  ctx: CanvasRenderingContext2D,
+  obj: Extract<AnnotationObject, { type: 'text' }>,
+) {
+  ctx.fillStyle = obj.color
+  ctx.font = `${obj.fontWeight} ${obj.fontSize}px ${obj.fontFamily}`
+  ctx.textBaseline = 'top'
+  const lines = obj.text.split('\n')
+  lines.forEach((line, i) => {
+    ctx.fillText(line, obj.x, obj.y + i * obj.fontSize * 1.2)
+  })
+}
+
+function drawHighlight(
+  ctx: CanvasRenderingContext2D,
+  obj: Extract<AnnotationObject, { type: 'highlight' }>,
+) {
+  ctx.globalAlpha = obj.opacity
+  ctx.fillStyle = obj.color
+  ctx.fillRect(obj.x, obj.y, obj.width, obj.height)
+  ctx.globalAlpha = 1
+}
+
+export function drawSelectionOverlay(
+  ctx: CanvasRenderingContext2D,
+  rect: Rect,
+  showHandles: boolean,
+) {
+  ctx.save()
+  ctx.strokeStyle = '#3b82f6'
+  ctx.lineWidth = 1
+  ctx.setLineDash([6, 4])
+  ctx.strokeRect(rect.x, rect.y, rect.width, rect.height)
+  ctx.setLineDash([])
+
+  const label = `${Math.round(rect.width)} × ${Math.round(rect.height)}`
+  ctx.font = '12px system-ui, sans-serif'
+  const padding = 4
+  const textWidth = ctx.measureText(label).width
+  const labelX = rect.x
+  const labelY = Math.max(0, rect.y - 22)
+
+  ctx.fillStyle = 'rgba(59, 130, 246, 0.9)'
+  ctx.fillRect(labelX, labelY, textWidth + padding * 2, 18)
+  ctx.fillStyle = '#fff'
+  ctx.fillText(label, labelX + padding, labelY + 4)
+
+  if (showHandles) {
+    const handles = getHandlePositions(rect)
+    ctx.fillStyle = '#fff'
+    ctx.strokeStyle = '#3b82f6'
+    for (const pos of Object.values(handles)) {
+      ctx.fillRect(pos.x - HANDLE_SIZE / 2, pos.y - HANDLE_SIZE / 2, HANDLE_SIZE, HANDLE_SIZE)
+      ctx.strokeRect(pos.x - HANDLE_SIZE / 2, pos.y - HANDLE_SIZE / 2, HANDLE_SIZE, HANDLE_SIZE)
+    }
+  }
+  ctx.restore()
+}
+
+export function getHandlePositions(rect: Rect): Record<ResizeHandle, { x: number; y: number }> {
+  const { x, y, width, height } = rect
+  const cx = x + width / 2
+  const cy = y + height / 2
+  return {
+    nw: { x, y },
+    n: { x: cx, y },
+    ne: { x: x + width, y },
+    e: { x: x + width, y: cy },
+    se: { x: x + width, y: y + height },
+    s: { x: cx, y: y + height },
+    sw: { x, y: y + height },
+    w: { x, y: cy },
+  }
+}
+
+export function hitTestHandle(
+  rect: Rect,
+  point: { x: number; y: number },
+): ResizeHandle | null {
+  const handles = getHandlePositions(rect)
+  for (const [key, pos] of Object.entries(handles) as [ResizeHandle, { x: number; y: number }][]) {
+    if (
+      Math.abs(point.x - pos.x) <= HANDLE_SIZE &&
+      Math.abs(point.y - pos.y) <= HANDLE_SIZE
+    ) {
+      return key
+    }
+  }
+  return null
+}
+
+export function pointInRect(point: { x: number; y: number }, rect: Rect): boolean {
+  return (
+    point.x >= rect.x &&
+    point.x <= rect.x + rect.width &&
+    point.y >= rect.y &&
+    point.y <= rect.y + rect.height
+  )
+}
+
+export function getObjectBounds(obj: AnnotationObject): Rect | null {
+  switch (obj.type) {
+    case 'arrow': {
+      const x = Math.min(obj.x1, obj.x2)
+      const y = Math.min(obj.y1, obj.y2)
+      return { x, y, width: Math.abs(obj.x2 - obj.x1), height: Math.abs(obj.y2 - obj.y1) }
+    }
+    case 'rectangle':
+    case 'highlight':
+    case 'blur':
+      return { x: obj.x, y: obj.y, width: obj.width, height: obj.height }
+    case 'circle':
+      return {
+        x: obj.x - obj.radius,
+        y: obj.y - obj.radius,
+        width: obj.radius * 2,
+        height: obj.radius * 2,
+      }
+    case 'text':
+      return { x: obj.x, y: obj.y, width: 200, height: obj.fontSize * 1.5 }
+    default:
+      return null
+  }
+}
+
+export function hitTestObject(
+  objects: AnnotationObject[],
+  point: { x: number; y: number },
+): AnnotationObject | null {
+  for (let i = objects.length - 1; i >= 0; i--) {
+    const obj = objects[i]
+    if (!obj) continue
+    const bounds = getObjectBounds(obj)
+    if (bounds && pointInRect(point, bounds)) return obj
+  }
+  return null
+}
+
+export function resizeRect(rect: Rect, handle: ResizeHandle, point: { x: number; y: number }): Rect {
+  let { x, y, width, height } = rect
+  const right = x + width
+  const bottom = y + height
+
+  switch (handle) {
+    case 'nw':
+      x = point.x
+      y = point.y
+      width = right - x
+      height = bottom - y
+      break
+    case 'n':
+      y = point.y
+      height = bottom - y
+      break
+    case 'ne':
+      y = point.y
+      width = point.x - x
+      height = bottom - y
+      break
+    case 'e':
+      width = point.x - x
+      break
+    case 'se':
+      width = point.x - x
+      height = point.y - y
+      break
+    case 's':
+      height = point.y - y
+      break
+    case 'sw':
+      x = point.x
+      width = right - x
+      height = point.y - y
+      break
+    case 'w':
+      x = point.x
+      width = right - x
+      break
+  }
+
+  if (width < 0) {
+    x += width
+    width = Math.abs(width)
+  }
+  if (height < 0) {
+    y += height
+    height = Math.abs(height)
+  }
+
+  return { x, y, width, height }
+}

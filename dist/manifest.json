@@ -1,0 +1,39 @@
+{
+  "manifest_version": 3,
+  "name": "Chrome Screenshot Pro",
+  "description": "Fast, private screenshot capture and annotation. No accounts, no cloud, no tracking.",
+  "version": "1.0.0",
+  "icons": {
+    "16": "public/icons/icon-16.png",
+    "48": "public/icons/icon-48.png",
+    "128": "public/icons/icon-128.png"
+  },
+  "action": {
+    "default_icon": {
+      "16": "public/icons/icon-16.png",
+      "48": "public/icons/icon-48.png",
+      "128": "public/icons/icon-128.png"
+    },
+    "default_popup": "src/popup/index.html",
+    "default_title": "Chrome Screenshot Pro"
+  },
+  "background": {
+    "service_worker": "service-worker-loader.js",
+    "type": "module"
+  },
+  "permissions": [
+    "activeTab",
+    "tabs",
+    "desktopCapture",
+    "offscreen",
+    "storage"
+  ],
+  "options_page": "src/editor/index.html",
+  "devtools_page": "src/offscreen/index.html",
+  "side_panel": {
+    "default_path": "src/capture/index.html"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  }
+}
