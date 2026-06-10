@@ -135,6 +135,14 @@ export function CopyIcon(props: IconProps) {
   )
 }
 
+export function CheckIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <polyline points="20 6 9 17 4 12" />
+    </Svg>
+  )
+}
+
 export function DownloadIcon(props: IconProps) {
   return (
     <Svg {...props}>

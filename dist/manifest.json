@@ -29,12 +29,12 @@
   ],
   "content_scripts": [
     {
+      "js": [
+        "assets/fullPageHelper.ts-Cwjo4gz3.js"
+      ],
       "matches": [
         "http://*/*",
         "https://*/*"
-      ],
-      "js": [
-        "src/content/fullPageHelper.ts-loader.js"
       ],
       "run_at": "document_idle"
     }
@@ -46,11 +46,11 @@
   "web_accessible_resources": [
     {
       "matches": [
-        "<all_urls>"
+        "http://*/*",
+        "https://*/*"
       ],
       "resources": [
-        "**/*",
-        "*"
+        "assets/fullPageHelper.ts-Cwjo4gz3.js"
       ],
       "use_dynamic_url": false
     }

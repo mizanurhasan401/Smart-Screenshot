@@ -12,6 +12,7 @@ interface IconButtonProps {
   className?: string
   size?: 'sm' | 'md'
   tooltipSide?: 'top' | 'bottom'
+  dismissTooltipOnClick?: boolean
 }
 
 export default function IconButton({
@@ -25,11 +26,18 @@ export default function IconButton({
   className = '',
   size = 'md',
   tooltipSide = 'bottom',
+  dismissTooltipOnClick = false,
 }: IconButtonProps) {
   const sizeClass = size === 'sm' ? 'h-8 w-8' : 'h-9 w-9'
 
   return (
-    <Tooltip label={label} description={description} shortcut={shortcut} side={tooltipSide}>
+    <Tooltip
+      label={label}
+      description={description}
+      shortcut={shortcut}
+      side={tooltipSide}
+      dismissOnClick={dismissTooltipOnClick}
+    >
       <button
         type="button"
         onClick={onClick}

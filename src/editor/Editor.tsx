@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Canvas from '@/editor/Canvas'
 import CaptureInfoBar from '@/editor/CaptureInfoBar'
+import AppIcon from '@/editor/ui/AppIcon'
 import FloatingToolbar from '@/editor/FloatingToolbar'
 import { ExportManager } from '@/editor/ExportManager'
 import Toolbar from '@/editor/Toolbar'
@@ -110,14 +111,16 @@ export default function Editor() {
     })
   }, [objects, cropRect, selection])
 
-  const handleCopy = useCallback(async () => {
+  const handleCopy = useCallback(async (): Promise<boolean> => {
     try {
       const canvas = await exportImage()
       const blob = await canvasToBlob(canvas, 'png')
       await copyImageToClipboard(blob)
       setAnnouncement('Copied to clipboard')
+      return true
     } catch {
       setAnnouncement('Copy failed')
+      return false
     }
   }, [exportImage])
 
@@ -158,8 +161,9 @@ export default function Editor() {
   if (loading) {
     return (
       <div className="flex h-screen flex-col items-center justify-center gap-3 bg-zinc-50 dark:bg-zinc-950">
+        <AppIcon size={48} alt="Chrome Screenshot Pro" />
         <div
-          className="h-8 w-8 animate-spin rounded-full border-2 border-blue-600 border-t-transparent"
+          className="h-6 w-6 animate-spin rounded-full border-2 border-blue-600 border-t-transparent"
           aria-hidden="true"
         />
         <p className="text-sm text-zinc-500">Loading screenshot…</p>

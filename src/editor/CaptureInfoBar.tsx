@@ -1,3 +1,5 @@
+import AppIcon from '@/editor/ui/AppIcon'
+
 interface CaptureInfoBarProps {
   title?: string
   url?: string
@@ -9,6 +11,7 @@ export default function CaptureInfoBar({ title, url }: CaptureInfoBarProps) {
   return (
     <div className="shrink-0 overflow-x-auto border-b border-blue-100 bg-blue-50/80 px-3 py-2 dark:border-blue-900 dark:bg-blue-950/30">
       <div className="flex min-w-0 items-center gap-2 text-sm">
+        <AppIcon size={20} alt="" className="opacity-90" />
         {title && (
           <span className="shrink-0 font-medium text-zinc-800 dark:text-zinc-100">
             {title}

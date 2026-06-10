@@ -7,6 +7,7 @@ interface TooltipProps {
   shortcut?: string
   children: ReactNode
   side?: 'top' | 'bottom'
+  dismissOnClick?: boolean
 }
 
 const GAP = 8
@@ -17,8 +18,10 @@ export default function Tooltip({
   shortcut,
   children,
   side = 'bottom',
+  dismissOnClick = false,
 }: TooltipProps) {
   const [visible, setVisible] = useState(false)
+  const [suppressed, setSuppressed] = useState(false)
   const [coords, setCoords] = useState({ top: 0, left: 0 })
   const triggerRef = useRef<HTMLDivElement>(null)
   const tooltipRef = useRef<HTMLDivElement>(null)
@@ -68,10 +71,26 @@ export default function Tooltip({
       <div
         ref={triggerRef}
         className="inline-flex"
-        onMouseEnter={() => setVisible(true)}
-        onMouseLeave={() => setVisible(false)}
-        onFocus={() => setVisible(true)}
-        onBlur={() => setVisible(false)}
+        onMouseEnter={() => {
+          if (!suppressed) setVisible(true)
+        }}
+        onMouseLeave={() => {
+          setVisible(false)
+          setSuppressed(false)
+        }}
+        onFocus={() => {
+          if (!suppressed) setVisible(true)
+        }}
+        onBlur={() => {
+          setVisible(false)
+          setSuppressed(false)
+        }}
+        onPointerDown={() => {
+          if (dismissOnClick) {
+            setVisible(false)
+            setSuppressed(true)
+          }
+        }}
       >
         <div aria-describedby={visible ? id : undefined}>{children}</div>
       </div>
