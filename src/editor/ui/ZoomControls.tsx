@@ -1,3 +1,4 @@
+import { getShortcutLabel } from '@/constants/shortcuts'
 import IconButton from '@/editor/ui/IconButton'
 import { FitIcon, MinusIcon, PlusIcon } from '@/editor/ui/ToolbarIcons'
 import { useEditorStore } from '@/store/useEditorStore'
@@ -22,7 +23,7 @@ export default function ZoomControls() {
         icon={<MinusIcon />}
         label="Zoom out"
         description="Make the screenshot smaller"
-        shortcut="Win + - or Ctrl + Scroll"
+        shortcut={`${getShortcutLabel('zoom-out')} or ${getShortcutLabel('zoom-scroll')}`}
         size="sm"
         disabled={!canZoomOut && isFit}
         onClick={zoomOut}
@@ -39,7 +40,7 @@ export default function ZoomControls() {
         icon={<PlusIcon />}
         label="Zoom in"
         description="Make the screenshot larger"
-        shortcut="Win + + or Ctrl + Scroll"
+        shortcut={`${getShortcutLabel('zoom-in')} or ${getShortcutLabel('zoom-scroll')}`}
         size="sm"
         disabled={!canZoomIn}
         onClick={zoomIn}
@@ -48,7 +49,7 @@ export default function ZoomControls() {
         icon={<FitIcon className="h-4 w-4" />}
         label="Fit to screen"
         description="Resize screenshot to fit the editor window"
-        shortcut="Win + 0"
+        shortcut={getShortcutLabel('zoom-fit')}
         size="sm"
         active={isFit}
         onClick={zoomFit}

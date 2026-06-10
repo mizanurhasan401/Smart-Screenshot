@@ -21,6 +21,9 @@ interface ShortcutHandlers {
   onCopy: () => void
   onDownload: (format: ExportFormat) => void
   onDelete: () => void
+  onOpenShortcuts?: () => void
+  onCloseShortcuts?: () => void
+  isShortcutsOpen?: boolean
 }
 
 export function useKeyboardShortcuts(handlers: ShortcutHandlers) {
@@ -45,6 +48,28 @@ export function useKeyboardShortcuts(handlers: ShortcutHandlers) {
 
       const key = e.key.toLowerCase()
       const mod = e.metaKey || e.ctrlKey
+
+      if (e.key === '?' && !mod) {
+        e.preventDefault()
+        if (handlers.isShortcutsOpen) {
+          handlers.onCloseShortcuts?.()
+        } else {
+          handlers.onOpenShortcuts?.()
+        }
+        return
+      }
+
+      if (e.key === 'Escape') {
+        if (handlers.isShortcutsOpen) {
+          handlers.onCloseShortcuts?.()
+          return
+        }
+        setDrawPreview(null)
+        setSelectedObjectId(null)
+        return
+      }
+
+      if (handlers.isShortcutsOpen) return
 
       if (mod && (key === '+' || key === '=' || e.key === '+')) {
         e.preventDefault()
@@ -80,12 +105,6 @@ export function useKeyboardShortcuts(handlers: ShortcutHandlers) {
       if (mod && key === 's') {
         e.preventDefault()
         handlers.onDownload('png')
-        return
-      }
-
-      if (e.key === 'Escape') {
-        setDrawPreview(null)
-        setSelectedObjectId(null)
         return
       }
 

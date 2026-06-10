@@ -23,6 +23,7 @@ export default function Editor() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [announcement, setAnnouncement] = useState('')
+  const [showShortcuts, setShowShortcuts] = useState(false)
   const [pageTitle, setPageTitle] = useState<string | undefined>()
   const [pageUrl, setPageUrl] = useState<string | undefined>()
 
@@ -151,6 +152,9 @@ export default function Editor() {
     onCopy: handleCopy,
     onDownload: handleDownload,
     onDelete: handleDelete,
+    onOpenShortcuts: () => setShowShortcuts(true),
+    onCloseShortcuts: () => setShowShortcuts(false),
+    isShortcutsOpen: showShortcuts,
   })
 
   const editingText = objects.find(
@@ -204,6 +208,8 @@ export default function Editor() {
           resetCrop()
           pushHistory()
         }}
+        showShortcuts={showShortcuts}
+        onShortcutsOpenChange={setShowShortcuts}
       />
       <CaptureInfoBar title={pageTitle} url={pageUrl} />
       <div className="relative flex-1 overflow-hidden">

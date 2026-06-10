@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
+import { getPanToolShortcutHint, getShortcutLabel, getToolShortcut } from '@/constants/shortcuts'
 import AppIcon from '@/editor/ui/AppIcon'
 import IconButton from '@/editor/ui/IconButton'
+import ShortcutsSheet from '@/editor/ui/ShortcutsSheet'
 import ZoomControls from '@/editor/ui/ZoomControls'
 import {
   ArrowIcon,
@@ -12,6 +14,7 @@ import {
   CropIcon,
   DownloadIcon,
   HighlightIcon,
+  InfoIcon,
   PanIcon,
   RectIcon,
   RedoIcon,
@@ -31,6 +34,8 @@ interface ToolbarProps {
   onCopy: () => boolean | Promise<boolean>
   onDownload: (format: ExportFormat) => void
   onResetCrop: () => void
+  showShortcuts: boolean
+  onShortcutsOpenChange: (open: boolean) => void
 }
 
 interface ToolDef {
@@ -46,63 +51,63 @@ const TOOLS: ToolDef[] = [
     id: 'selection',
     label: 'Select',
     description: 'Click and move annotations on the image',
-    shortcut: 'S',
+    shortcut: getToolShortcut('selection'),
     icon: <SelectIcon />,
   },
   {
     id: 'pan',
     label: 'Move',
     description: 'Drag to move only the screenshot image, or hold Ctrl and drag anytime',
-    shortcut: 'P or Ctrl + Drag',
+    shortcut: getPanToolShortcutHint(),
     icon: <PanIcon />,
   },
   {
     id: 'crop',
     label: 'Crop',
     description: 'Drag to keep only the area you need',
-    shortcut: 'C',
+    shortcut: getToolShortcut('crop'),
     icon: <CropIcon />,
   },
   {
     id: 'text',
     label: 'Text',
     description: 'Click to add editable text labels',
-    shortcut: 'T',
+    shortcut: getToolShortcut('text'),
     icon: <TextIcon />,
   },
   {
     id: 'arrow',
     label: 'Arrow',
     description: 'Draw arrows to point at details',
-    shortcut: 'A',
+    shortcut: getToolShortcut('arrow'),
     icon: <ArrowIcon />,
   },
   {
     id: 'rectangle',
     label: 'Rectangle',
     description: 'Draw rectangular outlines',
-    shortcut: 'R',
+    shortcut: getToolShortcut('rectangle'),
     icon: <RectIcon />,
   },
   {
     id: 'circle',
     label: 'Circle',
     description: 'Draw circular outlines',
-    shortcut: 'O',
+    shortcut: getToolShortcut('circle'),
     icon: <CircleIcon />,
   },
   {
     id: 'highlight',
     label: 'Highlight',
     description: 'Mark important areas with color',
-    shortcut: 'H',
+    shortcut: getToolShortcut('highlight'),
     icon: <HighlightIcon />,
   },
   {
     id: 'blur',
     label: 'Blur',
     description: 'Hide sensitive content',
-    shortcut: 'B',
+    shortcut: getToolShortcut('blur'),
     icon: <BlurIcon />,
   },
 ]
@@ -114,7 +119,15 @@ function Divider() {
   return <div className="mx-1 h-6 w-px shrink-0 bg-zinc-200 dark:bg-zinc-700" />
 }
 
-export default function Toolbar({ onUndo, onRedo, onCopy, onDownload, onResetCrop }: ToolbarProps) {
+export default function Toolbar({
+  onUndo,
+  onRedo,
+  onCopy,
+  onDownload,
+  onResetCrop,
+  showShortcuts,
+  onShortcutsOpenChange,
+}: ToolbarProps) {
   const activeTool = useEditorStore((s) => s.activeTool)
   const setActiveTool = useEditorStore((s) => s.setActiveTool)
   const canUndo = useEditorStore((s) => s.canUndo)
@@ -221,7 +234,7 @@ export default function Toolbar({ onUndo, onRedo, onCopy, onDownload, onResetCro
             icon={<UndoIcon />}
             label="Undo"
             description="Undo your last change"
-            shortcut="Ctrl + Z"
+            shortcut={getShortcutLabel('undo')}
             disabled={!canUndo}
             onClick={onUndo}
           />
@@ -229,7 +242,7 @@ export default function Toolbar({ onUndo, onRedo, onCopy, onDownload, onResetCro
             icon={<RedoIcon />}
             label="Redo"
             description="Redo an undone change"
-            shortcut="Ctrl + Shift + Z"
+            shortcut={getShortcutLabel('redo')}
             disabled={!canRedo}
             onClick={onRedo}
           />
@@ -243,7 +256,7 @@ export default function Toolbar({ onUndo, onRedo, onCopy, onDownload, onResetCro
           description={
             copied ? 'Image copied to clipboard' : 'Copy the edited image to clipboard'
           }
-          shortcut="Ctrl + C"
+          shortcut={getShortcutLabel('copy')}
           className={
             copied
               ? 'bg-emerald-600 text-white shadow-sm hover:bg-emerald-600 dark:hover:bg-emerald-600'
@@ -258,7 +271,7 @@ export default function Toolbar({ onUndo, onRedo, onCopy, onDownload, onResetCro
             icon={<DownloadIcon />}
             label="Download"
             description="Save the edited image to your computer"
-            shortcut="Ctrl + S"
+            shortcut={getShortcutLabel('download')}
             active={showDownloadMenu}
             dismissTooltipOnClick
             onClick={() => setShowDownloadMenu((v) => !v)}
@@ -280,6 +293,16 @@ export default function Toolbar({ onUndo, onRedo, onCopy, onDownload, onResetCro
             </button>
           </Tooltip>
         )}
+
+        <IconButton
+          icon={<InfoIcon />}
+          label="Keyboard shortcuts"
+          description="View all keyboard shortcuts"
+          shortcut={getShortcutLabel('shortcuts-help')}
+          active={showShortcuts}
+          dismissTooltipOnClick
+          onClick={() => onShortcutsOpenChange(true)}
+        />
       </div>
 
       {showDownloadMenu &&
@@ -310,6 +333,11 @@ export default function Toolbar({ onUndo, onRedo, onCopy, onDownload, onResetCro
         )}
 
       <ZoomControls />
+
+      <ShortcutsSheet
+        open={showShortcuts}
+        onClose={() => onShortcutsOpenChange(false)}
+      />
     </header>
   )
 }

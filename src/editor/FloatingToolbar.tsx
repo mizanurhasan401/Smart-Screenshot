@@ -1,4 +1,5 @@
 import { useMemo, type ReactNode } from 'react'
+import { getShortcutLabel } from '@/constants/shortcuts'
 import { getObjectBounds } from '@/editor/drawUtils'
 import IconButton from '@/editor/ui/IconButton'
 import { DeleteIcon } from '@/editor/ui/ToolbarIcons'
@@ -220,7 +221,7 @@ export default function FloatingToolbar({
         icon={<DeleteIcon className="h-4 w-4 text-red-500" />}
         label="Delete"
         description="Remove this annotation from the image"
-        shortcut="Delete"
+        shortcut={getShortcutLabel('delete')}
         size="sm"
         onClick={() => {
           removeObject(selected.id)
