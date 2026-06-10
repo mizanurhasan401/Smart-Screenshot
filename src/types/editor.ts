@@ -9,7 +9,11 @@ export type ToolType =
   | 'blur'
   | 'pan'
 
-export type ZoomLevel = 50 | 100 | 150 | 200 | 'fit'
+export type ZoomLevel = number | 'fit'
+
+export const ZOOM_MIN = 10
+export const ZOOM_MAX = 300
+export const ZOOM_STEP = 10
 
 export interface Point {
   x: number

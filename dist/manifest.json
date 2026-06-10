@@ -15,7 +15,7 @@
       "128": "public/icons/icon-128.png"
     },
     "default_popup": "src/popup/index.html",
-    "default_title": "Chrome Screenshot Pro"
+    "default_title": "Take Screenshot"
   },
   "background": {
     "service_worker": "service-worker-loader.js",
@@ -24,16 +24,35 @@
   "permissions": [
     "activeTab",
     "tabs",
-    "desktopCapture",
-    "offscreen",
-    "storage"
+    "storage",
+    "scripting"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "http://*/*",
+        "https://*/*"
+      ],
+      "js": [
+        "src/content/fullPageHelper.ts-loader.js"
+      ],
+      "run_at": "document_idle"
+    }
   ],
   "options_page": "src/editor/index.html",
-  "devtools_page": "src/offscreen/index.html",
-  "side_panel": {
-    "default_path": "src/capture/index.html"
-  },
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'"
-  }
+  },
+  "web_accessible_resources": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "resources": [
+        "**/*",
+        "*"
+      ],
+      "use_dynamic_url": false
+    }
+  ]
 }

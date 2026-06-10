@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Canvas from '@/editor/Canvas'
+import CaptureInfoBar from '@/editor/CaptureInfoBar'
 import FloatingToolbar from '@/editor/FloatingToolbar'
 import { ExportManager } from '@/editor/ExportManager'
 import Toolbar from '@/editor/Toolbar'
@@ -9,7 +10,7 @@ import { useTheme } from '@/hooks/useTheme'
 import { useEditorStore } from '@/store/useEditorStore'
 import { copyImageToClipboard } from '@/utils/clipboard'
 import { getSession } from '@/utils/db'
-import { canvasToBlob, downloadBlob, getTimestampFilename } from '@/utils/download'
+import { canvasToBlob, downloadBlob, getFilenameFromUrl } from '@/utils/download'
 import type { ExportFormat } from '@/utils/download'
 import { blobToImageBitmap } from '@/utils/image'
 
@@ -21,6 +22,8 @@ export default function Editor() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [announcement, setAnnouncement] = useState('')
+  const [pageTitle, setPageTitle] = useState<string | undefined>()
+  const [pageUrl, setPageUrl] = useState<string | undefined>()
 
   const imageWidth = useEditorStore((s) => s.imageWidth)
   const imageHeight = useEditorStore((s) => s.imageHeight)
@@ -62,6 +65,8 @@ export default function Editor() {
         }
         imageRef.current = bitmap
         setImageDimensions(session.width, session.height)
+        setPageTitle(session.title)
+        setPageUrl(session.url)
         syncHistoryState()
         setLoading(false)
       } catch (err) {
@@ -77,7 +82,7 @@ export default function Editor() {
       imageRef.current?.close()
       imageRef.current = null
     }
-  }, [setImageDimensions])
+  }, [setImageDimensions, syncHistoryState])
 
   useEffect(() => {
     if (activeTool) {
@@ -121,13 +126,13 @@ export default function Editor() {
       try {
         const canvas = await exportImage()
         const blob = await canvasToBlob(canvas, format)
-        downloadBlob(blob, getTimestampFilename(format))
+        downloadBlob(blob, getFilenameFromUrl(pageUrl, format))
         setAnnouncement(`Downloaded as ${format.toUpperCase()}`)
       } catch {
         setAnnouncement('Download failed')
       }
     },
-    [exportImage],
+    [exportImage, pageUrl],
   )
 
   const handleDelete = useCallback(() => {
@@ -152,7 +157,11 @@ export default function Editor() {
 
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-zinc-50 dark:bg-zinc-950">
+      <div className="flex h-screen flex-col items-center justify-center gap-3 bg-zinc-50 dark:bg-zinc-950">
+        <div
+          className="h-8 w-8 animate-spin rounded-full border-2 border-blue-600 border-t-transparent"
+          aria-hidden="true"
+        />
         <p className="text-sm text-zinc-500">Loading screenshot…</p>
       </div>
     )
@@ -160,8 +169,13 @@ export default function Editor() {
 
   if (error) {
     return (
-      <div className="flex h-screen items-center justify-center bg-zinc-50 dark:bg-zinc-950">
-        <p className="text-sm text-red-500">{error}</p>
+      <div className="flex h-screen flex-col items-center justify-center gap-2 bg-zinc-50 px-4 dark:bg-zinc-950">
+        <p className="text-sm font-medium text-red-500">{error}</p>
+        {pageUrl && (
+          <p className="max-w-md truncate text-xs text-zinc-400" title={pageUrl}>
+            {pageUrl}
+          </p>
+        )}
       </div>
     )
   }
@@ -187,6 +201,7 @@ export default function Editor() {
           pushHistory()
         }}
       />
+      <CaptureInfoBar title={pageTitle} url={pageUrl} />
       <div className="relative flex-1 overflow-hidden">
         <Canvas
           imageRef={imageRef}

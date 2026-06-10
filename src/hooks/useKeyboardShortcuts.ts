@@ -5,6 +5,7 @@ import type { ExportFormat } from '@/utils/download'
 
 const TOOL_KEYS: Record<string, ToolType> = {
   s: 'selection',
+  p: 'pan',
   c: 'crop',
   t: 'text',
   a: 'arrow',
@@ -26,6 +27,9 @@ export function useKeyboardShortcuts(handlers: ShortcutHandlers) {
   const setActiveTool = useEditorStore((s) => s.setActiveTool)
   const setSelectedObjectId = useEditorStore((s) => s.setSelectedObjectId)
   const setDrawPreview = useEditorStore((s) => s.setDrawPreview)
+  const zoomIn = useEditorStore((s) => s.zoomIn)
+  const zoomOut = useEditorStore((s) => s.zoomOut)
+  const zoomFit = useEditorStore((s) => s.zoomFit)
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -41,6 +45,22 @@ export function useKeyboardShortcuts(handlers: ShortcutHandlers) {
 
       const key = e.key.toLowerCase()
       const mod = e.metaKey || e.ctrlKey
+
+      if (mod && (key === '+' || key === '=' || e.key === '+')) {
+        e.preventDefault()
+        zoomIn()
+        return
+      }
+      if (mod && (key === '-' || key === '_' || e.key === '-')) {
+        e.preventDefault()
+        zoomOut()
+        return
+      }
+      if (mod && key === '0') {
+        e.preventDefault()
+        zoomFit()
+        return
+      }
 
       if (mod && key === 'z' && e.shiftKey) {
         e.preventDefault()
@@ -81,5 +101,13 @@ export function useKeyboardShortcuts(handlers: ShortcutHandlers) {
 
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [handlers, setActiveTool, setDrawPreview, setSelectedObjectId])
+  }, [
+    handlers,
+    setActiveTool,
+    setDrawPreview,
+    setSelectedObjectId,
+    zoomIn,
+    zoomOut,
+    zoomFit,
+  ])
 }

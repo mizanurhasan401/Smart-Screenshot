@@ -216,6 +216,60 @@ export function getObjectBounds(obj: AnnotationObject): Rect | null {
   }
 }
 
+const HIT_PADDING = 8
+
+function distanceToSegment(
+  px: number,
+  py: number,
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number,
+): number {
+  const dx = x2 - x1
+  const dy = y2 - y1
+  const lenSq = dx * dx + dy * dy
+  if (lenSq === 0) return Math.hypot(px - x1, py - y1)
+
+  const t = Math.max(0, Math.min(1, ((px - x1) * dx + (py - y1) * dy) / lenSq))
+  const projX = x1 + t * dx
+  const projY = y1 + t * dy
+  return Math.hypot(px - projX, py - projY)
+}
+
+function expandedRect(rect: Rect, padding: number): Rect {
+  return {
+    x: rect.x - padding,
+    y: rect.y - padding,
+    width: rect.width + padding * 2,
+    height: rect.height + padding * 2,
+  }
+}
+
+function hitTestSingleObject(
+  obj: AnnotationObject,
+  point: { x: number; y: number },
+): boolean {
+  switch (obj.type) {
+    case 'arrow': {
+      const tolerance = Math.max(HIT_PADDING, obj.strokeWidth * 3)
+      return distanceToSegment(point.x, point.y, obj.x1, obj.y1, obj.x2, obj.y2) <= tolerance
+    }
+    case 'circle': {
+      const dist = Math.hypot(point.x - obj.x, point.y - obj.y)
+      return dist <= obj.radius + HIT_PADDING
+    }
+    case 'text': {
+      const bounds = getObjectBounds(obj)
+      return bounds ? pointInRect(point, expandedRect(bounds, HIT_PADDING)) : false
+    }
+    default: {
+      const bounds = getObjectBounds(obj)
+      return bounds ? pointInRect(point, expandedRect(bounds, HIT_PADDING)) : false
+    }
+  }
+}
+
 export function hitTestObject(
   objects: AnnotationObject[],
   point: { x: number; y: number },
@@ -223,8 +277,99 @@ export function hitTestObject(
   for (let i = objects.length - 1; i >= 0; i--) {
     const obj = objects[i]
     if (!obj) continue
-    const bounds = getObjectBounds(obj)
-    if (bounds && pointInRect(point, bounds)) return obj
+    if (hitTestSingleObject(obj, point)) return obj
+  }
+  return null
+}
+
+export function drawHoverOverlay(ctx: CanvasRenderingContext2D, rect: Rect) {
+  ctx.save()
+  ctx.strokeStyle = 'rgba(59, 130, 246, 0.7)'
+  ctx.lineWidth = 2
+  ctx.setLineDash([4, 4])
+  const padded = expandedRect(rect, 4)
+  ctx.strokeRect(padded.x, padded.y, padded.width, padded.height)
+  ctx.setLineDash([])
+  ctx.restore()
+}
+
+export type ArrowEndpoint = 'start' | 'end'
+
+export const ARROW_HANDLE_RADIUS = 6
+const ARROW_ENDPOINT_HIT_RADIUS = 10
+
+type ArrowObject = Extract<AnnotationObject, { type: 'arrow' }>
+
+export type ArrowHitResult = {
+  obj: ArrowObject
+  endpoint: ArrowEndpoint | 'body'
+}
+
+function drawArrowHandle(ctx: CanvasRenderingContext2D, x: number, y: number) {
+  ctx.beginPath()
+  ctx.arc(x, y, ARROW_HANDLE_RADIUS, 0, Math.PI * 2)
+  ctx.fillStyle = '#fff'
+  ctx.fill()
+  ctx.strokeStyle = '#3b82f6'
+  ctx.lineWidth = 2
+  ctx.stroke()
+}
+
+export function drawArrowOverlay(
+  ctx: CanvasRenderingContext2D,
+  arrow: ArrowObject,
+  opts: { handles: boolean; dashed?: boolean },
+) {
+  ctx.save()
+  ctx.strokeStyle = opts.dashed ? 'rgba(59, 130, 246, 0.7)' : '#3b82f6'
+  ctx.lineWidth = Math.max(2, arrow.strokeWidth)
+  if (opts.dashed) ctx.setLineDash([4, 4])
+  ctx.beginPath()
+  ctx.moveTo(arrow.x1, arrow.y1)
+  ctx.lineTo(arrow.x2, arrow.y2)
+  ctx.stroke()
+  ctx.setLineDash([])
+  if (opts.handles) {
+    drawArrowHandle(ctx, arrow.x1, arrow.y1)
+    drawArrowHandle(ctx, arrow.x2, arrow.y2)
+  }
+  ctx.restore()
+}
+
+export function hitTestArrowEndpoint(
+  arrow: ArrowObject,
+  point: { x: number; y: number },
+): ArrowEndpoint | null {
+  const startDist = Math.hypot(point.x - arrow.x1, point.y - arrow.y1)
+  const endDist = Math.hypot(point.x - arrow.x2, point.y - arrow.y2)
+  const radius = Math.max(ARROW_ENDPOINT_HIT_RADIUS, arrow.strokeWidth * 3)
+  if (startDist <= radius && startDist <= endDist) return 'start'
+  if (endDist <= radius) return 'end'
+  return null
+}
+
+function hitTestArrowSingle(
+  obj: ArrowObject,
+  point: { x: number; y: number },
+): ArrowHitResult | null {
+  const endpoint = hitTestArrowEndpoint(obj, point)
+  if (endpoint) return { obj, endpoint }
+  const tolerance = Math.max(HIT_PADDING, obj.strokeWidth * 3)
+  if (distanceToSegment(point.x, point.y, obj.x1, obj.y1, obj.x2, obj.y2) <= tolerance) {
+    return { obj, endpoint: 'body' }
+  }
+  return null
+}
+
+export function hitTestArrow(
+  objects: AnnotationObject[],
+  point: { x: number; y: number },
+): ArrowHitResult | null {
+  for (let i = objects.length - 1; i >= 0; i--) {
+    const obj = objects[i]
+    if (!obj || obj.type !== 'arrow') continue
+    const hit = hitTestArrowSingle(obj, point)
+    if (hit) return hit
   }
   return null
 }

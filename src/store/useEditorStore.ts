@@ -7,6 +7,7 @@ import type {
   ToolType,
   ZoomLevel,
 } from '@/types/editor'
+import { ZOOM_MAX, ZOOM_MIN, ZOOM_STEP } from '@/types/editor'
 
 interface EditorState {
   activeTool: ToolType
@@ -34,6 +35,9 @@ interface EditorState {
   setActiveTool: (tool: ToolType) => void
   setSelectedObjectId: (id: string | null) => void
   setZoomLevel: (level: ZoomLevel) => void
+  zoomIn: () => void
+  zoomOut: () => void
+  zoomFit: () => void
   setPanOffset: (offset: { x: number; y: number }) => void
   setSelection: (rect: Rect | null) => void
   setCropRect: (rect: Rect | null) => void
@@ -77,6 +81,27 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   setActiveTool: (tool) => set({ activeTool: tool, drawPreview: null }),
   setSelectedObjectId: (id) => set({ selectedObjectId: id }),
   setZoomLevel: (level) => set({ zoomLevel: level }),
+  zoomIn: () => {
+    const { zoomLevel } = get()
+    if (zoomLevel === 'fit') {
+      set({ zoomLevel: 100 })
+      return
+    }
+    set({ zoomLevel: Math.min(zoomLevel + ZOOM_STEP, ZOOM_MAX) })
+  },
+  zoomOut: () => {
+    const { zoomLevel } = get()
+    if (zoomLevel === 'fit') {
+      set({ zoomLevel: 100 })
+      return
+    }
+    if (zoomLevel <= ZOOM_MIN) {
+      set({ zoomLevel: 'fit' })
+      return
+    }
+    set({ zoomLevel: Math.max(zoomLevel - ZOOM_STEP, ZOOM_MIN) })
+  },
+  zoomFit: () => set({ zoomLevel: 'fit' }),
   setPanOffset: (offset) => set({ panOffset: offset }),
   setSelection: (rect) => set({ selection: rect }),
   setCropRect: (rect) => set({ cropRect: rect }),

@@ -1,15 +1,14 @@
-export type CaptureSource = 'screen' | 'window' | 'tab'
+export type CaptureMode = 'visible' | 'fullpage'
 
 export interface CaptureSession {
   id: string
   blob: Blob
   width: number
   height: number
+  url?: string
+  title?: string
   createdAt: number
 }
 
 export type MessageType =
-  | { type: 'CAPTURE_TAB'; dataUrl: string }
-  | { type: 'CAPTURE_FRAME'; streamId: string }
-  | { type: 'CAPTURE_RESULT'; success: boolean; sessionId?: string; error?: string }
-  | { type: 'FRAME_CAPTURED'; blob?: Blob; error?: string }
+  | { type: 'CAPTURE_REQUEST'; mode: CaptureMode; tabId: number }
