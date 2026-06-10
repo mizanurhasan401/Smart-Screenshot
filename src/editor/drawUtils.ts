@@ -1,6 +1,15 @@
 import type { AnnotationObject, Rect, ResizeHandle } from '@/types/editor'
 
 const HANDLE_SIZE = 8
+const OVERLAY_SCREEN_STROKE_PX = 3
+
+function screenStrokeWidth(scale: number, screenPx = OVERLAY_SCREEN_STROKE_PX): number {
+  return Math.max(2, screenPx / scale)
+}
+
+function screenHandleSize(scale: number): number {
+  return Math.max(HANDLE_SIZE, 10 / scale)
+}
 
 export function drawAnnotation(ctx: CanvasRenderingContext2D, obj: AnnotationObject) {
   ctx.save()
@@ -118,33 +127,46 @@ export function drawSelectionOverlay(
   ctx: CanvasRenderingContext2D,
   rect: Rect,
   showHandles: boolean,
+  scale = 1,
 ) {
   ctx.save()
+  const lineWidth = screenStrokeWidth(scale)
+  const dash = Math.max(4, 6 / scale)
+
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.95)'
+  ctx.lineWidth = lineWidth + Math.max(1, 2 / scale)
+  ctx.setLineDash([dash, dash * 0.65])
+  ctx.strokeRect(rect.x, rect.y, rect.width, rect.height)
+
   ctx.strokeStyle = '#3b82f6'
-  ctx.lineWidth = 1
-  ctx.setLineDash([6, 4])
+  ctx.lineWidth = lineWidth
   ctx.strokeRect(rect.x, rect.y, rect.width, rect.height)
   ctx.setLineDash([])
 
   const label = `${Math.round(rect.width)} × ${Math.round(rect.height)}`
-  ctx.font = '12px system-ui, sans-serif'
-  const padding = 4
+  const fontSize = Math.max(11, 12 / scale)
+  ctx.font = `${fontSize}px system-ui, sans-serif`
+  const padding = 4 / scale
   const textWidth = ctx.measureText(label).width
   const labelX = rect.x
-  const labelY = Math.max(0, rect.y - 22)
+  const labelH = 18 / scale
+  const labelY = Math.max(0, rect.y - labelH - 4 / scale)
 
   ctx.fillStyle = 'rgba(59, 130, 246, 0.9)'
-  ctx.fillRect(labelX, labelY, textWidth + padding * 2, 18)
+  ctx.fillRect(labelX, labelY, textWidth + padding * 2, labelH)
   ctx.fillStyle = '#fff'
-  ctx.fillText(label, labelX + padding, labelY + 4)
+  ctx.fillText(label, labelX + padding, labelY + 4 / scale)
 
   if (showHandles) {
+    const handleSize = screenHandleSize(scale)
+    const half = handleSize / 2
     const handles = getHandlePositions(rect)
     ctx.fillStyle = '#fff'
     ctx.strokeStyle = '#3b82f6'
+    ctx.lineWidth = Math.max(1.5, 2 / scale)
     for (const pos of Object.values(handles)) {
-      ctx.fillRect(pos.x - HANDLE_SIZE / 2, pos.y - HANDLE_SIZE / 2, HANDLE_SIZE, HANDLE_SIZE)
-      ctx.strokeRect(pos.x - HANDLE_SIZE / 2, pos.y - HANDLE_SIZE / 2, HANDLE_SIZE, HANDLE_SIZE)
+      ctx.fillRect(pos.x - half, pos.y - half, handleSize, handleSize)
+      ctx.strokeRect(pos.x - half, pos.y - half, handleSize, handleSize)
     }
   }
   ctx.restore()
@@ -282,12 +304,15 @@ export function hitTestObject(
   return null
 }
 
-export function drawHoverOverlay(ctx: CanvasRenderingContext2D, rect: Rect) {
+export function drawHoverOverlay(ctx: CanvasRenderingContext2D, rect: Rect, scale = 1) {
   ctx.save()
-  ctx.strokeStyle = 'rgba(59, 130, 246, 0.7)'
-  ctx.lineWidth = 2
-  ctx.setLineDash([4, 4])
-  const padded = expandedRect(rect, 4)
+  const lineWidth = screenStrokeWidth(scale, 2.5)
+  const dash = Math.max(3, 4 / scale)
+  const pad = Math.max(3, 4 / scale)
+  ctx.strokeStyle = 'rgba(59, 130, 246, 0.85)'
+  ctx.lineWidth = lineWidth
+  ctx.setLineDash([dash, dash])
+  const padded = expandedRect(rect, pad)
   ctx.strokeRect(padded.x, padded.y, padded.width, padded.height)
   ctx.setLineDash([])
   ctx.restore()

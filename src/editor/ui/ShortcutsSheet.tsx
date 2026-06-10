@@ -139,7 +139,7 @@ export default function ShortcutsSheet({ open, onClose }: ShortcutsSheetProps) {
         aria-modal="true"
         aria-labelledby="shortcuts-sheet-title"
         tabIndex={-1}
-        className="relative z-10 flex max-h-[92dvh] w-full max-w-3xl flex-col overflow-hidden rounded-t-2xl border border-zinc-200 bg-white shadow-2xl dark:border-zinc-700 dark:bg-zinc-900 sm:max-h-[min(88dvh,750px)] sm:rounded-2xl"
+        className="relative z-10 flex max-h-[95dvh] w-full max-w-3xl flex-col overflow-hidden rounded-t-2xl border border-zinc-200 bg-white shadow-2xl dark:border-zinc-700 dark:bg-zinc-900 sm:max-h-[min(88dvh,750px)] sm:rounded-2xl"
       >
         <div className="shrink-0 border-b border-zinc-200 bg-gradient-to-b from-zinc-50 to-white px-4 py-4 dark:border-zinc-700 dark:from-zinc-800/80 dark:to-zinc-900 sm:px-5">
           <div className="flex items-start justify-between gap-3">

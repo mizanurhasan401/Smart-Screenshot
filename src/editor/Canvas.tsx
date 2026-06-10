@@ -162,10 +162,10 @@ export default function Canvas({ imageRef, containerRef, onActionComplete }: Can
     }
 
     if (activeTool === 'selection' && selection) {
-      drawSelectionOverlay(ctx, selection, true)
+      drawSelectionOverlay(ctx, selection, true, scale)
     } else if (activeTool === 'crop' && (cropRect || drawPreview)) {
       const rect = cropRect ?? (drawPreview ? normalizeRect(drawPreview.start, drawPreview.current) : null)
-      if (rect) drawSelectionOverlay(ctx, rect, false)
+      if (rect) drawSelectionOverlay(ctx, rect, false, scale)
     }
 
     const store = useEditorStore.getState()
@@ -176,7 +176,7 @@ export default function Canvas({ imageRef, containerRef, onActionComplete }: Can
         drawArrowOverlay(ctx, obj, { handles: true })
       } else {
         const bounds = obj ? getObjectBounds(obj) : null
-        if (bounds) drawSelectionOverlay(ctx, bounds, false)
+        if (bounds) drawSelectionOverlay(ctx, bounds, false, scale)
       }
     }
 
@@ -186,7 +186,7 @@ export default function Canvas({ imageRef, containerRef, onActionComplete }: Can
         drawArrowOverlay(ctx, obj, { handles: true, dashed: true })
       } else {
         const bounds = obj ? getObjectBounds(obj) : null
-        if (bounds) drawHoverOverlay(ctx, bounds)
+        if (bounds) drawHoverOverlay(ctx, bounds, scale)
       }
     }
 

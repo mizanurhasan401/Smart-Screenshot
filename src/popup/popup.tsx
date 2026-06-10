@@ -11,13 +11,11 @@ const OPTIONS: { mode: CaptureMode; label: string; description: string; icon: st
 export default function Popup() {
   const [loading, setLoading] = useState<CaptureMode | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [tabTitle, setTabTitle] = useState<string>('')
   const [tabUrl, setTabUrl] = useState<string>('')
   const [tabId, setTabId] = useState<number | null>(null)
 
   useEffect(() => {
     void chrome.tabs.query({ active: true, currentWindow: true }).then(([tab]) => {
-      setTabTitle(tab?.title ?? 'Untitled')
       setTabUrl(tab?.url ?? '')
       setTabId(tab?.id ?? null)
     })
@@ -69,16 +67,7 @@ export default function Popup() {
         </h1>
       </div>
 
-      <div className="mb-3 rounded-lg border border-blue-100 bg-blue-50/80 px-2.5 py-2 dark:border-blue-900 dark:bg-blue-950/30">
-        <p className="truncate text-xs font-medium text-zinc-800 dark:text-zinc-100" title={tabTitle}>
-          {tabTitle || 'Loading tab…'}
-        </p>
-        <p className="truncate text-[11px] text-blue-600 dark:text-blue-400" title={tabUrl}>
-          {tabUrl || '…'}
-        </p>
-      </div>
-
-      <div className="flex flex-col gap-1.5">
+      <div className="mt-3 flex flex-col gap-1.5">
         {OPTIONS.map((opt) => {
           const isFullPage = opt.mode === 'fullpage'
           const disabled = loading !== null || (isFullPage && !fullPageEnabled)
