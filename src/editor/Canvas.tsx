@@ -3,6 +3,7 @@ import {
   drawAnnotation,
   drawArrow,
   drawArrowOverlay,
+  drawPen,
   drawHoverOverlay,
   drawSelectionOverlay,
   getObjectBounds,
@@ -58,6 +59,7 @@ export default function Canvas({ imageRef, containerRef, onActionComplete }: Can
   const selection = useEditorStore((s) => s.selection)
   const cropRect = useEditorStore((s) => s.cropRect)
   const objects = useEditorStore((s) => s.objects)
+  const editingTextId = useEditorStore((s) => s.editingTextId)
   const drawPreview = useEditorStore((s) => s.drawPreview)
   const zoomLevel = useEditorStore((s) => s.zoomLevel)
   const panOffset = useEditorStore((s) => s.panOffset)
@@ -113,7 +115,7 @@ export default function Canvas({ imageRef, containerRef, onActionComplete }: Can
     ctx.drawImage(image, 0, 0)
 
     for (const obj of objects) {
-      if (obj.type !== 'blur') drawAnnotation(ctx, obj)
+      if (obj.type !== 'blur' && obj.id !== editingTextId) drawAnnotation(ctx, obj)
     }
 
     for (const obj of objects) {
@@ -158,6 +160,8 @@ export default function Canvas({ imageRef, containerRef, onActionComplete }: Can
         ctx.beginPath()
         ctx.arc(start.x, start.y, radius, 0, Math.PI * 2)
         ctx.stroke()
+      } else if (type === 'pen' && drawPreview.points) {
+        drawPen(ctx, drawPreview.points, defaultColor, defaultStrokeWidth)
       }
     }
 
@@ -170,7 +174,7 @@ export default function Canvas({ imageRef, containerRef, onActionComplete }: Can
 
     const store = useEditorStore.getState()
     const selectedId = store.selectedObjectId
-    if (selectedId) {
+    if (selectedId && selectedId !== editingTextId) {
       const obj = objects.find((o) => o.id === selectedId)
       if (obj?.type === 'arrow') {
         drawArrowOverlay(ctx, obj, { handles: true })
@@ -203,6 +207,7 @@ export default function Canvas({ imageRef, containerRef, onActionComplete }: Can
     defaultOpacity,
     defaultStrokeWidth,
     drawPreview,
+    editingTextId,
     getScale,
     imageRef,
     containerRef,
@@ -349,6 +354,16 @@ export default function Canvas({ imageRef, containerRef, onActionComplete }: Can
         ...rect,
         strength: defaultBlurStrength,
       })
+    } else if (type === 'pen') {
+      const points = store.drawPreview?.points ?? []
+      if (points.length < 2) return
+      store.addObject({
+        id,
+        type: 'pen',
+        points,
+        color: defaultColor,
+        strokeWidth: defaultStrokeWidth,
+      })
     }
 
     onActionComplete()
@@ -423,6 +438,12 @@ export default function Canvas({ imageRef, containerRef, onActionComplete }: Can
     const resolved = resolveObjectHit(point)
 
     if (activeTool === 'text') {
+      // Clicking an existing object selects + drags it (double-click re-edits text).
+      if (resolved) {
+        startObjectDrag(store, resolved.obj, point, resolved.mode)
+        return
+      }
+      // Empty area: create a new text box (also commits any in-progress edit via textarea blur).
       const id = crypto.randomUUID()
       store.addObject({
         id,
@@ -452,12 +473,17 @@ export default function Canvas({ imageRef, containerRef, onActionComplete }: Can
       return
     }
 
-    if (['arrow', 'rectangle', 'circle', 'highlight', 'blur'].includes(activeTool)) {
+    if (['arrow', 'rectangle', 'circle', 'highlight', 'blur', 'pen'].includes(activeTool)) {
       if (resolved) {
         startObjectDrag(store, resolved.obj, point, resolved.mode)
         return
       }
-      store.setDrawPreview({ type: activeTool, start: point, current: point })
+      store.setDrawPreview({
+        type: activeTool,
+        start: point,
+        current: point,
+        ...(activeTool === 'pen' ? { points: [point] } : {}),
+      })
       return
     }
 
@@ -510,7 +536,13 @@ export default function Canvas({ imageRef, containerRef, onActionComplete }: Can
     }
 
     if (drawPreview) {
-      store.setDrawPreview({ ...drawPreview, current: point })
+      store.setDrawPreview({
+        ...drawPreview,
+        current: point,
+        ...(drawPreview.type === 'pen'
+          ? { points: [...(drawPreview.points ?? []), point] }
+          : {}),
+      })
       return
     }
 
@@ -531,6 +563,10 @@ export default function Canvas({ imageRef, containerRef, onActionComplete }: Can
             y2: origin.y2 + dy,
           })
         }
+      } else if (origin.type === 'pen') {
+        store.updateObject(id, {
+          points: origin.points.map((p) => ({ x: p.x + dx, y: p.y + dy })),
+        })
       } else if ('x' in origin && 'y' in origin) {
         store.updateObject(id, { x: origin.x + dx, y: origin.y + dy })
       }

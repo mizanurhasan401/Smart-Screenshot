@@ -7,6 +7,7 @@ export type ToolType =
   | 'circle'
   | 'highlight'
   | 'blur'
+  | 'pen'
   | 'pan'
 
 export type ZoomLevel = number | 'fit'
@@ -93,6 +94,13 @@ export interface BlurObject extends BaseObject {
   strength: number
 }
 
+export interface PenObject extends BaseObject {
+  type: 'pen'
+  points: Point[]
+  color: string
+  strokeWidth: number
+}
+
 export type AnnotationObject =
   | ArrowObject
   | RectObject
@@ -100,6 +108,7 @@ export type AnnotationObject =
   | TextObject
   | HighlightObject
   | BlurObject
+  | PenObject
 
 export interface EditorSnapshot {
   objects: AnnotationObject[]
@@ -111,6 +120,7 @@ export interface DrawPreview {
   type: ToolType
   start: Point
   current: Point
+  points?: Point[]
 }
 
 export type ResizeHandle =

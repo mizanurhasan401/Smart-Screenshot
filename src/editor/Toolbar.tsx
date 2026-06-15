@@ -17,6 +17,7 @@ import {
   HighlightIcon,
   InfoIcon,
   PanIcon,
+  PenIcon,
   RectIcon,
   RedoIcon,
   ResetIcon,
@@ -76,6 +77,13 @@ const TOOLS: ToolDef[] = [
     description: 'Click to add editable text labels',
     shortcut: getToolShortcut('text'),
     icon: <TextIcon />,
+  },
+  {
+    id: 'pen',
+    label: 'Pen',
+    description: 'Draw freehand',
+    shortcut: getToolShortcut('pen'),
+    icon: <PenIcon />,
   },
   {
     id: 'arrow',

@@ -13,6 +13,7 @@ const TOOL_KEYS: Record<string, ToolType> = {
   o: 'circle',
   h: 'highlight',
   b: 'blur',
+  d: 'pen',
 }
 
 interface ShortcutHandlers {

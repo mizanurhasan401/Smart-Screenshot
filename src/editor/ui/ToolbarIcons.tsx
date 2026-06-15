@@ -73,6 +73,15 @@ export function ArrowIcon(props: IconProps) {
   )
 }
 
+export function PenIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
+      <path d="m15 5 4 4" />
+    </Svg>
+  )
+}
+
 export function RectIcon(props: IconProps) {
   return (
     <Svg {...props}>
@@ -92,8 +101,8 @@ export function CircleIcon(props: IconProps) {
 export function HighlightIcon(props: IconProps) {
   return (
     <Svg {...props}>
-      <path d="M12 20h9" />
-      <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+      <path d="m9 11-6 6v3h9l3-3" />
+      <path d="m22 12-4.6 4.6a2 2 0 0 1-2.8 0l-5.2-5.2a2 2 0 0 1 0-2.8L14 4" />
     </Svg>
   )
 }

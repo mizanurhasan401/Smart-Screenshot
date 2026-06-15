@@ -89,6 +89,8 @@ function offsetObject(obj: AnnotationObject, ox: number, oy: number): Annotation
       return { ...obj, x: obj.x - ox, y: obj.y - oy }
     case 'text':
       return { ...obj, x: obj.x - ox, y: obj.y - oy }
+    case 'pen':
+      return { ...obj, points: obj.points.map((p) => ({ x: p.x - ox, y: p.y - oy })) }
     default:
       return obj
   }

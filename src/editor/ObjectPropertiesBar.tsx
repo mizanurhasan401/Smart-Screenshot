@@ -27,6 +27,8 @@ function getControlsForObject(obj: AnnotationObject): ControlType[] {
     case 'rectangle':
     case 'circle':
       return ['color', 'stroke', 'fill', 'delete']
+    case 'pen':
+      return ['color', 'stroke', 'delete']
     case 'text':
       return ['color', 'fontSize', 'fontFamily', 'fontWeight', 'delete']
     case 'highlight':

@@ -1,4 +1,4 @@
-import type { AnnotationObject, Rect, ResizeHandle } from '@/types/editor'
+import type { AnnotationObject, Point, Rect, ResizeHandle } from '@/types/editor'
 
 const HANDLE_SIZE = 8
 const OVERLAY_SCREEN_STROKE_PX = 3
@@ -29,11 +29,43 @@ export function drawAnnotation(ctx: CanvasRenderingContext2D, obj: AnnotationObj
     case 'highlight':
       drawHighlight(ctx, obj)
       break
+    case 'pen':
+      drawPen(ctx, obj.points, obj.color, obj.strokeWidth)
+      break
     case 'blur':
       // Blur is rendered separately via compositing
       break
   }
   ctx.restore()
+}
+
+export function drawPen(
+  ctx: CanvasRenderingContext2D,
+  points: Point[],
+  color: string,
+  width: number,
+) {
+  if (points.length === 0) return
+  ctx.strokeStyle = color
+  ctx.fillStyle = color
+  ctx.lineWidth = width
+  ctx.lineCap = 'round'
+  ctx.lineJoin = 'round'
+
+  if (points.length === 1) {
+    const p = points[0]!
+    ctx.beginPath()
+    ctx.arc(p.x, p.y, width / 2, 0, Math.PI * 2)
+    ctx.fill()
+    return
+  }
+
+  ctx.beginPath()
+  ctx.moveTo(points[0]!.x, points[0]!.y)
+  for (let i = 1; i < points.length; i++) {
+    ctx.lineTo(points[i]!.x, points[i]!.y)
+  }
+  ctx.stroke()
 }
 
 export function drawArrow(
@@ -155,7 +187,8 @@ export function drawSelectionOverlay(
   ctx.fillStyle = 'rgba(59, 130, 246, 0.9)'
   ctx.fillRect(labelX, labelY, textWidth + padding * 2, labelH)
   ctx.fillStyle = '#fff'
-  ctx.fillText(label, labelX + padding, labelY + 4 / scale)
+  ctx.textBaseline = 'middle'
+  ctx.fillText(label, labelX + padding, labelY + labelH / 2)
 
   if (showHandles) {
     const handleSize = screenHandleSize(scale)
@@ -233,6 +266,20 @@ export function getObjectBounds(obj: AnnotationObject): Rect | null {
       }
     case 'text':
       return { x: obj.x, y: obj.y, width: 200, height: obj.fontSize * 1.5 }
+    case 'pen': {
+      if (obj.points.length === 0) return null
+      let minX = Infinity
+      let minY = Infinity
+      let maxX = -Infinity
+      let maxY = -Infinity
+      for (const p of obj.points) {
+        if (p.x < minX) minX = p.x
+        if (p.y < minY) minY = p.y
+        if (p.x > maxX) maxX = p.x
+        if (p.y > maxY) maxY = p.y
+      }
+      return { x: minX, y: minY, width: maxX - minX, height: maxY - minY }
+    }
     default:
       return null
   }
@@ -280,6 +327,19 @@ function hitTestSingleObject(
     case 'circle': {
       const dist = Math.hypot(point.x - obj.x, point.y - obj.y)
       return dist <= obj.radius + HIT_PADDING
+    }
+    case 'pen': {
+      const tolerance = Math.max(HIT_PADDING, obj.strokeWidth * 3)
+      if (obj.points.length === 1) {
+        const p = obj.points[0]!
+        return Math.hypot(point.x - p.x, point.y - p.y) <= tolerance
+      }
+      for (let i = 1; i < obj.points.length; i++) {
+        const a = obj.points[i - 1]!
+        const b = obj.points[i]!
+        if (distanceToSegment(point.x, point.y, a.x, a.y, b.x, b.y) <= tolerance) return true
+      }
+      return false
     }
     case 'text': {
       const bounds = getObjectBounds(obj)

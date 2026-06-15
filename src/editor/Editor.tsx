@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import Canvas from '@/editor/Canvas'
 import CaptureInfoBar from '@/editor/CaptureInfoBar'
 import AppIcon from '@/editor/ui/AppIcon'
@@ -19,6 +19,7 @@ export default function Editor() {
   const imageRef = useRef<ImageBitmap | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const exportManager = useRef(new ExportManager())
+  const textAreaRef = useRef<HTMLTextAreaElement>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [announcement, setAnnouncement] = useState('')
@@ -161,6 +162,16 @@ export default function Editor() {
       o.id === editingTextId && o.type === 'text',
   )
 
+  // Grow the editing textarea to fit its content so multi-line text isn't clipped.
+  useLayoutEffect(() => {
+    const el = textAreaRef.current
+    if (!el) return
+    el.style.height = 'auto'
+    el.style.height = `${el.scrollHeight}px`
+    el.style.width = 'auto'
+    el.style.width = `${el.scrollWidth}px`
+  }, [editingText?.text, editingText?.fontSize, zoomLevel, panOffset])
+
   if (loading) {
     return (
       <div className="flex h-screen flex-col items-center justify-center gap-3 bg-zinc-50 dark:bg-zinc-950">
@@ -222,8 +233,11 @@ export default function Editor() {
           const top = rect.top + offsetY + editingText.y * scale
           return (
             <textarea
+              ref={textAreaRef}
               autoFocus
+              wrap="off"
               value={editingText.text}
+              onPointerDown={(e) => e.stopPropagation()}
               onChange={(e) => updateObject(editingText.id, { text: e.target.value })}
               onBlur={() => {
                 setEditingTextId(null)
@@ -235,7 +249,7 @@ export default function Editor() {
                   pushHistory()
                 }
               }}
-              className="fixed z-30 resize-none rounded border border-blue-400 bg-white/90 px-1 py-0.5 text-sm shadow dark:bg-zinc-900/90"
+              className="fixed z-30 resize-none overflow-hidden rounded border border-blue-400 bg-transparent px-1 py-0.5 text-sm"
               style={{
                 left,
                 top,
@@ -243,6 +257,7 @@ export default function Editor() {
                 fontSize: editingText.fontSize * scale,
                 fontFamily: editingText.fontFamily,
                 fontWeight: editingText.fontWeight,
+                lineHeight: 1.2,
                 minWidth: 80,
               }}
             />

@@ -54,6 +54,7 @@ export const TOOL_SHORTCUT_KEYS: Record<ToolType, string> = {
   circle: 'O',
   highlight: 'H',
   blur: 'B',
+  pen: 'D',
 }
 
 export const SHORTCUT_GROUPS: ShortcutGroup[] = [
@@ -71,6 +72,7 @@ export const SHORTCUTS: ShortcutItem[] = [
   { id: 'tool-pan', label: 'Move', keys: ['P'], group: 'Tools' },
   { id: 'tool-crop', label: 'Crop', keys: ['C'], group: 'Tools' },
   { id: 'tool-text', label: 'Text', keys: ['T'], group: 'Tools' },
+  { id: 'tool-pen', label: 'Pen', keys: ['D'], group: 'Tools' },
   { id: 'tool-arrow', label: 'Arrow', keys: ['A'], group: 'Tools' },
   { id: 'tool-rectangle', label: 'Rectangle', keys: ['R'], group: 'Tools' },
   { id: 'tool-circle', label: 'Circle', keys: ['O'], group: 'Tools' },
