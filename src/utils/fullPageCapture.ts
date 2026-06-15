@@ -43,51 +43,24 @@ function scrollInPage(scrollX: number, scrollY: number): void {
   window.scrollTo(scrollX, scrollY)
 }
 
-async function getPageMetricsViaScripting(tabId: number): Promise<PageMetrics> {
-  const [result] = await chrome.scripting.executeScript({
-    target: { tabId, frameIds: [0] },
-    func: readMetricsInPage,
-  })
-  if (!result?.result) throw new Error('Could not read page dimensions')
-  return result.result as PageMetrics
-}
-
-async function scrollTabViaScripting(tabId: number, x: number, y: number): Promise<void> {
-  await chrome.scripting.executeScript({
-    target: { tabId, frameIds: [0] },
-    func: scrollInPage,
-    args: [x, y],
-  })
-  await sleep(SCROLL_SETTLE_MS)
-}
-
-async function getPageMetricsViaMessage(tabId: number): Promise<PageMetrics> {
-  return chrome.tabs.sendMessage(tabId, { type: 'GET_PAGE_METRICS' })
-}
-
-async function scrollTabViaMessage(tabId: number, x: number, y: number): Promise<void> {
-  await chrome.tabs.sendMessage(tabId, { type: 'SCROLL_TO', x, y })
-  await sleep(SCROLL_SETTLE_MS)
-}
-
 async function getPageMetrics(tabId: number, url: string | undefined): Promise<PageMetrics> {
   if (!isHttpUrl(url)) {
     throw new Error('Full page only works on regular website tabs (http/https).')
   }
 
-  let metrics: PageMetrics | undefined
-
+  let metrics: PageMetrics
   try {
-    metrics = await getPageMetricsViaMessage(tabId)
-  } catch {
-    try {
-      metrics = await getPageMetricsViaScripting(tabId)
-    } catch (err) {
-      throw new Error(friendlyCaptureError(err))
-    }
+    const [result] = await chrome.scripting.executeScript({
+      target: { tabId, frameIds: [0] },
+      func: readMetricsInPage,
+    })
+    if (!result?.result) throw new Error('Could not read page dimensions')
+    metrics = result.result as PageMetrics
+  } catch (err) {
+    throw new Error(friendlyCaptureError(err))
   }
 
-  if (!metrics?.scrollHeight || !metrics.viewportHeight) {
+  if (!metrics.scrollHeight || !metrics.viewportHeight) {
     throw new Error('Could not read page dimensions. Refresh the page and try again.')
   }
 
@@ -95,11 +68,12 @@ async function getPageMetrics(tabId: number, url: string | undefined): Promise<P
 }
 
 async function scrollTab(tabId: number, x: number, y: number): Promise<void> {
-  try {
-    await scrollTabViaMessage(tabId, x, y)
-  } catch {
-    await scrollTabViaScripting(tabId, x, y)
-  }
+  await chrome.scripting.executeScript({
+    target: { tabId, frameIds: [0] },
+    func: scrollInPage,
+    args: [x, y],
+  })
+  await sleep(SCROLL_SETTLE_MS)
 }
 
 async function captureVisiblePng(windowId: number): Promise<Blob> {

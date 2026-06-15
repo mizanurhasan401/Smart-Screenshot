@@ -24,15 +24,7 @@ export default defineManifest({
     service_worker: 'src/background/service-worker.ts',
     type: 'module',
   },
-  permissions: ['activeTab', 'tabs', 'storage', 'scripting'],
-  content_scripts: [
-    {
-      matches: ['http://*/*', 'https://*/*'],
-      js: ['src/content/fullPageHelper.ts'],
-      run_at: 'document_idle',
-    },
-  ],
-  options_page: 'src/editor/index.html',
+  permissions: ['activeTab', 'tabs', 'scripting'],
   content_security_policy: {
     extension_pages: "script-src 'self'; object-src 'self'",
   },
