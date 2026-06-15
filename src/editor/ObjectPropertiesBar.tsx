@@ -1,17 +1,12 @@
 import { useMemo, type ReactNode } from 'react'
 import { getShortcutLabel } from '@/constants/shortcuts'
-import { getObjectBounds } from '@/editor/drawUtils'
 import IconButton from '@/editor/ui/IconButton'
 import { DeleteIcon } from '@/editor/ui/ToolbarIcons'
 import Tooltip from '@/editor/ui/Tooltip'
 import { useEditorStore } from '@/store/useEditorStore'
 import type { AnnotationObject } from '@/types/editor'
 
-interface FloatingToolbarProps {
-  scale: number
-  panOffset: { x: number; y: number }
-  containerSize: { width: number; height: number }
-  imageSize: { width: number; height: number }
+interface ObjectPropertiesBarProps {
   onChangeComplete: () => void
 }
 
@@ -62,13 +57,7 @@ function LabeledControl({
   )
 }
 
-export default function FloatingToolbar({
-  scale,
-  panOffset,
-  containerSize,
-  imageSize,
-  onChangeComplete,
-}: FloatingToolbarProps) {
+export default function ObjectPropertiesBar({ onChangeComplete }: ObjectPropertiesBarProps) {
   const selectedObjectId = useEditorStore((s) => s.selectedObjectId)
   const objects = useEditorStore((s) => s.objects)
   const updateObject = useEditorStore((s) => s.updateObject)
@@ -81,22 +70,13 @@ export default function FloatingToolbar({
 
   if (!selected) return null
 
-  const bounds = getObjectBounds(selected)
-  if (!bounds) return null
-
-  const offsetX = (containerSize.width - imageSize.width * scale) / 2 + panOffset.x
-  const offsetY = (containerSize.height - imageSize.height * scale) / 2 + panOffset.y
-  const left = offsetX + (bounds.x + bounds.width / 2) * scale
-  const top = offsetY + bounds.y * scale - 44
-
   const controls = getControlsForObject(selected)
 
   return (
     <div
       role="toolbar"
       aria-label="Object properties"
-      className="pointer-events-auto absolute z-20 flex -translate-x-1/2 items-center gap-2 rounded-lg border border-zinc-200 bg-white px-2 py-1.5 shadow-md dark:border-zinc-700 dark:bg-zinc-900"
-      style={{ left, top: Math.max(8, top) }}
+      className="flex shrink-0 items-center gap-2"
     >
       {controls.includes('color') && 'color' in selected && (
         <LabeledControl label="Color" description="Change the stroke or text color">
@@ -180,6 +160,7 @@ export default function FloatingToolbar({
             value={selected.opacity}
             aria-label="Opacity"
             onChange={(e) => updateObject(selected.id, { opacity: Number(e.target.value) })}
+            onPointerUp={onChangeComplete}
             className="w-16"
           />
         </LabeledControl>
@@ -194,6 +175,7 @@ export default function FloatingToolbar({
             value={selected.strength}
             aria-label="Blur strength"
             onChange={(e) => updateObject(selected.id, { strength: Number(e.target.value) })}
+            onPointerUp={onChangeComplete}
             className="w-16"
           />
         </LabeledControl>
@@ -212,6 +194,7 @@ export default function FloatingToolbar({
                   fillColor: e.target.value,
                 })
               }
+              onPointerUp={onChangeComplete}
               className="h-7 w-7 cursor-pointer rounded border-0 bg-transparent p-0"
             />
           </LabeledControl>

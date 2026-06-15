@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { getPanToolShortcutHint, getShortcutLabel, getToolShortcut } from '@/constants/shortcuts'
+import ObjectPropertiesBar from '@/editor/ObjectPropertiesBar'
 import AppIcon from '@/editor/ui/AppIcon'
 import IconButton from '@/editor/ui/IconButton'
 import ShortcutsSheet from '@/editor/ui/ShortcutsSheet'
@@ -34,6 +35,7 @@ interface ToolbarProps {
   onCopy: () => boolean | Promise<boolean>
   onDownload: (format: ExportFormat) => void
   onResetCrop: () => void
+  onChangeComplete: () => void
   showShortcuts: boolean
   onShortcutsOpenChange: (open: boolean) => void
 }
@@ -125,6 +127,7 @@ export default function Toolbar({
   onCopy,
   onDownload,
   onResetCrop,
+  onChangeComplete,
   showShortcuts,
   onShortcutsOpenChange,
 }: ToolbarProps) {
@@ -212,7 +215,7 @@ export default function Toolbar({
     >
       <AppIcon size={28} alt="Chrome Screenshot Pro" className="mr-0.5 hidden sm:block" />
 
-      <div className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto">
+      <div className="flex shrink-0 items-center gap-1 overflow-x-auto">
         <div className="flex shrink-0 items-center gap-0.5">
           {TOOLS.map((tool) => (
             <IconButton
@@ -247,6 +250,10 @@ export default function Toolbar({
             onClick={onRedo}
           />
         </div>
+      </div>
+
+      <div className="flex min-w-0 flex-1 items-center justify-center overflow-x-auto px-2">
+        <ObjectPropertiesBar onChangeComplete={onChangeComplete} />
       </div>
 
       <div className="flex shrink-0 items-center gap-0.5">

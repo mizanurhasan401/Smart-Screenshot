@@ -2,7 +2,6 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import Canvas from '@/editor/Canvas'
 import CaptureInfoBar from '@/editor/CaptureInfoBar'
 import AppIcon from '@/editor/ui/AppIcon'
-import FloatingToolbar from '@/editor/FloatingToolbar'
 import { ExportManager } from '@/editor/ExportManager'
 import Toolbar from '@/editor/Toolbar'
 import { useCanvasHistory } from '@/hooks/useCanvasHistory'
@@ -189,10 +188,6 @@ export default function Editor() {
   }
 
   const scale = getScale()
-  const containerSize = {
-    width: containerRef.current?.clientWidth ?? window.innerWidth,
-    height: containerRef.current?.clientHeight ?? window.innerHeight - 48,
-  }
 
   return (
     <div className="flex h-screen flex-col bg-zinc-50 dark:bg-zinc-950">
@@ -208,6 +203,7 @@ export default function Editor() {
           resetCrop()
           pushHistory()
         }}
+        onChangeComplete={pushHistory}
         showShortcuts={showShortcuts}
         onShortcutsOpenChange={setShowShortcuts}
       />
@@ -217,13 +213,6 @@ export default function Editor() {
           imageRef={imageRef}
           containerRef={containerRef}
           onActionComplete={pushHistory}
-        />
-        <FloatingToolbar
-          scale={scale}
-          panOffset={panOffset}
-          containerSize={containerSize}
-          imageSize={{ width: imageWidth, height: imageHeight }}
-          onChangeComplete={pushHistory}
         />
         {editingText && containerRef.current && (() => {
           const rect = containerRef.current!.getBoundingClientRect()
