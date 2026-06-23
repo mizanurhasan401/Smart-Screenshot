@@ -22,7 +22,7 @@ npm run prepublish
 
 This runs:
 
-1. `npm run build` → creates `dist/` and `release/crx-chrome-screenshot-pro-<version>.zip`
+1. `npm run build` → creates `dist/` and `release/crx-screenshot-pro-<version>.zip`
 2. `npm run package:verify` → checks manifest, version, no dev artifacts
 
 **BN:** `prepublish` চালালে বিল্ড ও যাচাই একসাথে হবে।
@@ -77,7 +77,7 @@ Minimum: **1** screenshot. Recommended: **3–5**.
 
 1. Go to [Chrome Developer Dashboard](https://chrome.google.com/webstore/devconsole)
 2. **New item** (first publish) or select existing item (update)
-3. Upload: `release/crx-chrome-screenshot-pro-<version>.zip`  
+3. Upload: `release/crx-screenshot-pro-<version>.zip`  
    (version number matches `package.json`, e.g. `1.0.1`)
 4. Wait for upload to parse manifest
 
@@ -134,7 +134,7 @@ If Chrome rejects for **unused permissions** (e.g. `storage`):
 1. Remove the unused permission from [`manifest.config.ts`](../manifest.config.ts)
 2. Bump `package.json` version (e.g. `1.0.0` → `1.0.1`)
 3. Run `npm run prepublish`
-4. Upload new ZIP: `release/crx-chrome-screenshot-pro-1.0.1.zip`
+4. Upload new ZIP: `release/crx-screenshot-pro-1.0.1.zip`
 5. In Developer Dashboard → **Privacy practices**:
    - Remove justification for the removed permission (`storage`)
    - Remove host/content-script justification if content scripts were removed

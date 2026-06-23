@@ -61,7 +61,7 @@ export default function Popup() {
   return (
     <div className="w-80 bg-white p-3 dark:bg-zinc-950">
       <div className="mb-2 flex items-center gap-2">
-        <AppIcon size={28} alt="Chrome Screenshot Pro" />
+        <AppIcon size={28} alt="Screenshot Pro" />
         <h1 className="text-sm font-semibold text-zinc-800 dark:text-zinc-100">
           Take Screenshot
         </h1>

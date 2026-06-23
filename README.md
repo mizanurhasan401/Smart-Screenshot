@@ -1,6 +1,6 @@
-# Chrome Screenshot Pro
+# Screenshot Pro – Capture & Annotate
 
-A fast, private Chrome extension for screenshot capture and annotation. Built with React 19, TypeScript, Vite, and Manifest V3.
+A fast, private browser extension for screenshot capture and annotation. Built with React 19, TypeScript, Vite, and Manifest V3.
 
 ## Features
 
@@ -33,7 +33,7 @@ npm run build
 Production output:
 
 - `dist/` — load unpacked or inspect built manifest
-- `release/crx-chrome-screenshot-pro-<version>.zip` — upload to Chrome Web Store
+- `release/crx-screenshot-pro-<version>.zip` — upload to Chrome Web Store
 
 ## Verify before publish
 
@@ -52,7 +52,7 @@ Quick checklist:
 1. `npm run prepublish`
 2. Host [docs/privacy-policy.html](docs/privacy-policy.html) and copy the public URL
 3. Add screenshots to `store-assets/` (see [store-assets/README.md](store-assets/README.md))
-4. Upload `release/crx-chrome-screenshot-pro-*.zip` to the [Developer Dashboard](https://chrome.google.com/webstore/devconsole)
+4. Upload `release/crx-screenshot-pro-*.zip` to the [Developer Dashboard](https://chrome.google.com/webstore/devconsole)
 5. Paste listing text from [docs/STORE_LISTING.md](docs/STORE_LISTING.md)
 
 ## Privacy

@@ -9,7 +9,7 @@ interface ScreenshotDB extends DBSchema {
   }
 }
 
-const DB_NAME = 'chrome-screenshot-pro'
+const DB_NAME = 'screenshot-pro'
 const DB_VERSION = 1
 const TTL_MS = 24 * 60 * 60 * 1000
 

@@ -3,7 +3,7 @@ import pkg from './package.json'
 
 export default defineManifest({
   manifest_version: 3,
-  name: 'Chrome Screenshot Pro',
+  name: 'Screenshot Pro – Capture & Annotate',
   description: 'Fast, private screenshot capture and annotation. No accounts, no cloud, no tracking.',
   version: pkg.version,
   icons: {

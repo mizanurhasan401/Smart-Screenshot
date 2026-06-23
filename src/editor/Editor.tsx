@@ -12,7 +12,7 @@ import { copyImageToClipboard } from '@/utils/clipboard'
 import { getSession } from '@/utils/db'
 import { canvasToBlob, downloadBlob, getFilenameFromUrl } from '@/utils/download'
 import type { ExportFormat } from '@/utils/download'
-import { blobToImageBitmap } from '@/utils/image'
+import { blobToImageBitmap, createDemoImageBitmap } from '@/utils/image'
 
 export default function Editor() {
   useTheme()
@@ -48,18 +48,38 @@ export default function Editor() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     const sessionId = params.get('session')
-    if (!sessionId) {
-      setError('No screenshot session found')
-      setLoading(false)
-      return
-    }
 
     let cancelled = false
 
+    const loadDemo = async () => {
+      const { bitmap, width, height } = await createDemoImageBitmap()
+      if (cancelled) {
+        bitmap.close()
+        return
+      }
+      imageRef.current = bitmap
+      setImageDimensions(width, height)
+      setPageTitle('Demo image')
+      setPageUrl(undefined)
+      syncHistoryState()
+      setLoading(false)
+    }
+
     ;(async () => {
       try {
+        // No session (opened directly, or capture unavailable): load a usable
+        // demo image so editing and export still work.
+        if (!sessionId) {
+          await loadDemo()
+          return
+        }
         const session = await getSession(sessionId)
-        if (!session) throw new Error('Session expired or not found')
+        if (!session) {
+          // Session expired or missing — fall back to the demo image instead of
+          // leaving the editor empty.
+          await loadDemo()
+          return
+        }
         const bitmap = await blobToImageBitmap(session.blob)
         if (cancelled) {
           bitmap.close()
@@ -175,7 +195,7 @@ export default function Editor() {
   if (loading) {
     return (
       <div className="flex h-screen flex-col items-center justify-center gap-3 bg-zinc-50 dark:bg-zinc-950">
-        <AppIcon size={48} alt="Chrome Screenshot Pro" />
+        <AppIcon size={48} alt="Screenshot Pro" />
         <div
           className="h-6 w-6 animate-spin rounded-full border-2 border-blue-600 border-t-transparent"
           aria-hidden="true"

@@ -221,7 +221,7 @@ export default function Toolbar({
       aria-label="Editor toolbar"
       className="flex h-12 shrink-0 items-center gap-1 border-b border-zinc-200 bg-white px-2 dark:border-zinc-800 dark:bg-zinc-950 sm:px-3"
     >
-      <AppIcon size={28} alt="Chrome Screenshot Pro" className="mr-0.5 hidden sm:block" />
+      <AppIcon size={28} alt="Screenshot Pro" className="mr-0.5 hidden sm:block" />
 
       <div className="flex shrink-0 items-center gap-1 overflow-x-auto">
         <div className="flex shrink-0 items-center gap-0.5">

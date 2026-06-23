@@ -6,7 +6,7 @@ Copy-paste into the [Chrome Developer Dashboard](https://chrome.google.com/webst
 
 ## Extension name
 
-**Chrome Screenshot Pro**
+**Screenshot Pro – Capture & Annotate**
 
 ---
 
@@ -31,7 +31,7 @@ Capture and annotate screenshots locally. Visible area or full page. No account,
 ### English
 
 ```
-Chrome Screenshot Pro helps you capture and annotate web page screenshots quickly — entirely on your device.
+Screenshot Pro helps you capture and annotate web page screenshots quickly — entirely on your device.
 
 CAPTURE
 • Visible Area — screenshot what you see right now
@@ -64,7 +64,7 @@ Note: Full page capture works on standard website tabs only (not chrome:// pages
 ### Bangla
 
 ```
-Chrome Screenshot Pro দিয়ে ওয়েবপেজের স্ক্রিনশট দ্রুত নিন ও এডিট করুন — সবকিছু আপনার ডিভাইসেই।
+Screenshot Pro দিয়ে ওয়েবপেজের স্ক্রিনশট দ্রুত নিন ও এডিট করুন — সবকিছু আপনার ডিভাইসেই।
 
 ক্যাপচার
 • Visible Area — এখন যা দেখছেন
